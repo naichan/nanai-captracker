@@ -1,6 +1,5 @@
 package com.mangago.captracker.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mangago.captracker.model.Manga;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -37,9 +36,11 @@ public class ScrapperService {
     }
 
     public void createMangas(String pageUrl) throws IOException {
-       Document doc = Jsoup
-               .connect(pageUrl)
-               .userAgent("Chrome")
+       Document doc = Jsoup.connect(pageUrl)
+               .data("query", "Java")
+               .userAgent("Mozilla")
+               .cookie("auth", "token")
+               .timeout(3000)
                .get();
        Elements titles = new Elements(doc.getElementsByClass("title"));
        Elements imgs = new Elements(doc.getElementsByClass("showdesc"));
@@ -48,9 +49,11 @@ public class ScrapperService {
            String url = title.getElementsByTag("a").attr("abs:href");
            String img = imgIterator.next().getElementsByTag("img").attr("data-src");
            Manga manga = new Manga(title.text(), url, img);
-           Document mangaDoc = Jsoup
-                   .connect(url)
-                   .userAgent("Chrome")
+           Document mangaDoc = Jsoup.connect(url)
+                   .data("query", "Java")
+                   .userAgent("Mozilla")
+                   .cookie("auth", "token")
+                   .timeout(3000)
                    .get();
            List<Element> elements = mangaDoc.getElementsByTag("tr");
            for (Element e : elements) {
