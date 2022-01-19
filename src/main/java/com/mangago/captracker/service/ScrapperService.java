@@ -39,12 +39,13 @@ public class ScrapperService {
     public void createMangas(String pageUrl) throws IOException {
 
         Connection connection = Jsoup.connect(pageUrl)
-                .ignoreContentType(true)
-                .ignoreHttpErrors(true)
-                .data("query", "Java")
-                .userAgent("Mozilla/5.0")
-                .cookie("auth", "token")
-                .timeout(3000);
+                //.header("accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9")
+                //.header("sec-fetch-user", "1")
+                //.ignoreHttpErrors(true)
+                //.data("query", "Java")
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36");
+                //.cookie("auth", "token")
+                //.timeout(3000);
         Connection.Response resp = connection.execute();
 
        if (resp.statusCode() == 200) {
