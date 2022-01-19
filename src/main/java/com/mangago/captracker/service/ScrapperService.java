@@ -42,7 +42,7 @@ public class ScrapperService {
                 .ignoreContentType(true)
                 .ignoreHttpErrors(true)
                 .data("query", "Java")
-                .userAgent("Mozilla")
+                .userAgent("Mozilla/5.0")
                 .cookie("auth", "token")
                 .timeout(3000);
         Connection.Response resp = connection.execute();
@@ -59,7 +59,7 @@ public class ScrapperService {
                Manga manga = new Manga(title.text(), url, img);
                Document mangaDoc = Jsoup.connect(url)
                        .data("query", "Java")
-                       .userAgent("Mozilla")
+                       .userAgent("Mozilla/5.0")
                        .cookie("auth", "token")
                        .timeout(3000)
                        .get();
