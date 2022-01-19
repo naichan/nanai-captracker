@@ -59,10 +59,7 @@ public class ScrapperService {
                String img = imgIterator.next().getElementsByTag("img").attr("data-src");
                Manga manga = new Manga(title.text(), url, img);
                Document mangaDoc = Jsoup.connect(url)
-                       .data("query", "Java")
-                       .userAgent("Mozilla/5.0")
-                       .cookie("auth", "token")
-                       .timeout(3000)
+                       .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36")
                        .get();
                List<Element> elements = mangaDoc.getElementsByTag("tr");
                for (Element e : elements) {
