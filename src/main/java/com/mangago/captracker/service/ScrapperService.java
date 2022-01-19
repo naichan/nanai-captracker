@@ -1,6 +1,7 @@
 package com.mangago.captracker.service;
 
 import com.mangago.captracker.model.Manga;
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -36,41 +37,51 @@ public class ScrapperService {
     }
 
     public void createMangas(String pageUrl) throws IOException {
-       Document doc = Jsoup.connect(pageUrl)
-               .data("query", "Java")
-               .userAgent("Mozilla")
-               .cookie("auth", "token")
-               .timeout(3000)
-               .get();
-       Elements titles = new Elements(doc.getElementsByClass("title"));
-       Elements imgs = new Elements(doc.getElementsByClass("showdesc"));
-       Iterator<Element> imgIterator = imgs.stream().iterator();
-       for (Element title : titles) {
-           String url = title.getElementsByTag("a").attr("abs:href");
-           String img = imgIterator.next().getElementsByTag("img").attr("data-src");
-           Manga manga = new Manga(title.text(), url, img);
-           Document mangaDoc = Jsoup.connect(url)
-                   .data("query", "Java")
-                   .userAgent("Mozilla")
-                   .cookie("auth", "token")
-                   .timeout(3000)
+
+        Connection connection = Jsoup.connect(pageUrl)
+                .ignoreContentType(true)
+                .ignoreHttpErrors(true)
+                .data("query", "Java")
+                .userAgent("Mozilla")
+                .cookie("auth", "token")
+                .timeout(3000);
+        Connection.Response resp = connection.execute();
+
+       if (resp.statusCode() == 200) {
+           Document doc = connection
                    .get();
-           List<Element> elements = mangaDoc.getElementsByTag("tr");
-           for (Element e : elements) {
-               if (e.text().contains("new") && !e.text().contains("Latest")) {
-                   String date = e.getElementsByTag("td").get(2).text();
-                   LocalDate parsedDate = LocalDate.parse(date, formatter);
-                   if (LocalDate.now().compareTo(parsedDate) < 7) {
-                       String name = e.getElementsByTag("td").get(0).text();
-                       String link = e.getElementsByTag("a").attr("abs:href");
-                       manga.addChapter(name, date, link);
+           Elements titles = new Elements(doc.getElementsByClass("title"));
+           Elements imgs = new Elements(doc.getElementsByClass("showdesc"));
+           Iterator<Element> imgIterator = imgs.stream().iterator();
+           for (Element title : titles) {
+               String url = title.getElementsByTag("a").attr("abs:href");
+               String img = imgIterator.next().getElementsByTag("img").attr("data-src");
+               Manga manga = new Manga(title.text(), url, img);
+               Document mangaDoc = Jsoup.connect(url)
+                       .data("query", "Java")
+                       .userAgent("Mozilla")
+                       .cookie("auth", "token")
+                       .timeout(3000)
+                       .get();
+               List<Element> elements = mangaDoc.getElementsByTag("tr");
+               for (Element e : elements) {
+                   if (e.text().contains("new") && !e.text().contains("Latest")) {
+                       String date = e.getElementsByTag("td").get(2).text();
+                       LocalDate parsedDate = LocalDate.parse(date, formatter);
+                       if (LocalDate.now().compareTo(parsedDate) < 7) {
+                           String name = e.getElementsByTag("td").get(0).text();
+                           String link = e.getElementsByTag("a").attr("abs:href");
+                           manga.addChapter(name, date, link);
+                       }
                    }
                }
+               if (!manga.getNewChapters().isEmpty()) {
+                   mangas.add(manga);
+               }
            }
-           if (!manga.getNewChapters().isEmpty()) {
-               mangas.add(manga);
-           }
-       }
+       } else { throw new IOException("Erro conectando à lista: "
+               + resp.statusMessage()
+               + " " + resp.statusCode()); }
    }
 
    public List<Manga> getMangas() {
