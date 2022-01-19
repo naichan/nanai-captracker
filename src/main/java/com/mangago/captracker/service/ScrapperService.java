@@ -43,7 +43,9 @@ public class ScrapperService {
                 //.header("sec-fetch-user", "1")
                 //.ignoreHttpErrors(true)
                 //.data("query", "Java")
-                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36");
+                .userAgent("Mozilla/5.0 "
+              //          + "(Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36"
+                );
                 //.cookie("auth", "token")
                 //.timeout(3000);
         Connection.Response resp = connection.execute();
@@ -58,24 +60,31 @@ public class ScrapperService {
                String url = title.getElementsByTag("a").attr("abs:href");
                String img = imgIterator.next().getElementsByTag("img").attr("data-src");
                Manga manga = new Manga(title.text(), url, img);
-               Document mangaDoc = Jsoup.connect(url)
-                       .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36")
-                       .get();
-               List<Element> elements = mangaDoc.getElementsByTag("tr");
-               for (Element e : elements) {
-                   if (e.text().contains("new") && !e.text().contains("Latest")) {
-                       String date = e.getElementsByTag("td").get(2).text();
-                       LocalDate parsedDate = LocalDate.parse(date, formatter);
-                       if (LocalDate.now().compareTo(parsedDate) < 7) {
-                           String name = e.getElementsByTag("td").get(0).text();
-                           String link = e.getElementsByTag("a").attr("abs:href");
-                           manga.addChapter(name, date, link);
+               Connection con = Jsoup.connect(url)
+                       .userAgent("Mozilla/5.0 "
+                     //          + "(Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36"
+                       );
+               Connection.Response response = con.execute();
+               if (response.statusCode() == 200) {
+                   Document mangaDoc = con.get();
+                   List<Element> elements = mangaDoc.getElementsByTag("tr");
+                   for (Element e : elements) {
+                       if (e.text().contains("new") && !e.text().contains("Latest")) {
+                           String date = e.getElementsByTag("td").get(2).text();
+                           LocalDate parsedDate = LocalDate.parse(date, formatter);
+                           if (LocalDate.now().compareTo(parsedDate) < 7) {
+                               String name = e.getElementsByTag("td").get(0).text();
+                               String link = e.getElementsByTag("a").attr("abs:href");
+                               manga.addChapter(name, date, link);
+                           }
                        }
                    }
-               }
-               if (!manga.getNewChapters().isEmpty()) {
-                   mangas.add(manga);
-               }
+                   if (!manga.getNewChapters().isEmpty()) {
+                       mangas.add(manga);
+                   }
+               } else { throw new IOException("Erro conectando aos mangás: "
+                       + resp.statusMessage()
+                       + " " + resp.statusCode()); }
            }
        } else { throw new IOException("Erro conectando à lista: "
                + resp.statusMessage()
