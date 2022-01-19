@@ -81,6 +81,7 @@ public class ScrapperService {
                    }
                    if (!manga.getNewChapters().isEmpty()) {
                        mangas.add(manga);
+                       System.out.println("adding manga");
                    }
                } else { throw new IOException("Erro conectando aos mangás: "
                        + resp.statusMessage()
